@@ -1,70 +1,204 @@
-# Pokedex 추천 시스템 - Legends ZA
+# 포켓몬 추천 시스템 - Legends ZA
 
-이 프로젝트는 개인화된 추천 시스템을 갖춘 Pokedex 웹 애플리케이션입니다. 사용자가 포켓몬을 탐색하고, 필터링하며, 검색할 수 있도록 합니다. 인증된 사용자는 포켓몬을 '좋아요'하고, 자신의 좋아요 기록을 기반으로 개인화된 추천을 받으며, 임시 '파티'를 관리할 수 있습니다. 관리자 패널은 사용자 및 포켓몬 데이터를 관리하는 기능을 제공합니다.
+포켓몬을 탐색하고, 개인화된 추천을 받으며, 나만의 파티를 구성할 수 있는 풀스택 웹 애플리케이션입니다.
 
 ## 주요 기능
 
-*   **포켓몬 탐색 및 검색:** 다양한 필터링 및 검색 옵션을 통해 포켓몬을 찾을 수 있습니다.
-*   **사용자 인증:** JWT 기반의 안전한 사용자 등록 및 로그인 시스템.
-*   **개인화된 추천:** 사용자의 '좋아요' 기록을 기반으로 맞춤형 포켓몬 추천을 제공합니다.
-*   **포켓몬 파티 관리:** 사용자가 임시 포켓몬 파티를 구성하고 관리할 수 있습니다.
-*   **관리자 패널:** 관리자는 사용자 계정 및 포켓몬 데이터를 관리할 수 있습니다.
+- **포켓몬 도감**: 다양한 필터(타입, 역할, 특징, 외형)로 포켓몬 검색 및 탐색
+- **개인화 추천**: 사용자의 좋아요 기록을 기반으로 한 맞춤형 포켓몬 추천
+- **파티 관리**: 최대 6마리의 포켓몬으로 구성된 임시 파티 생성
+- **사용자 인증**: JWT 기반 회원가입 및 로그인
+- **관리자 패널**: 사용자 및 포켓몬 데이터 관리
 
-## 아키텍처
-
-이 애플리케이션은 Flask 백엔드와 React 프론트엔드로 구성된 풀스택 웹 애플리케이션입니다.
-
-### 1. 백엔드 (Python/Flask)
-
-*   **핵심 애플리케이션 (`app.py`):** Flask 애플리케이션의 중심점으로, 라우팅, 데이터베이스 초기화, JWT 인증 설정 및 React 프론트엔드 제공을 담당합니다. 포켓몬 데이터 가져오기, 필터 적용, 일반 및 개인화된 추천 제공, 사용자 '좋아요' 관리 등을 위한 API 엔드포인트를 정의합니다. 또한 데이터베이스 생성, 관리자 사용자 생성, 초기 포켓몬 데이터 가져오기를 위한 CLI 명령어를 포함합니다.
-*   **인증 (`auth.py`):** 사용자 등록, 로그인(JWT 액세스 토큰 발급), 현재 사용자 정보 검색을 관리하는 Flask 블루프린트입니다. JWT 처리를 위해 `flask_jwt_extended`를, 안전한 비밀번호 해싱을 위해 `bcrypt`를 사용합니다.
-*   **관리 (`admin.py`):** 관리자 작업을 위한 API 엔드포인트를 제공하는 Flask 블루프린트입니다. 사용자 목록/상세 보기, 포켓몬 목록/업데이트/삭제와 같은 기능을 포함하며, `admin_required` 데코레이터를 통해 관리자만 접근할 수 있도록 제한됩니다.
-*   **데이터베이스 모델 (`models.py`):** SQLAlchemy ORM을 사용하여 애플리케이션의 데이터 구조를 정의합니다. `User` (인증 및 역할), `UserLike` (사용자가 '좋아요'한 포켓몬 추적), `Pokemon` (상세 포켓몬 속성 저장) 모델을 포함합니다.
-*   **데이터 보강 (`enrich_data.py`):** `pokemon_completed.csv`를 사전 처리하는 독립형 스크립트입니다. 각 포켓몬에 대해 PokeAPI에서 `evolution_chain_id`를 가져와 CSV를 업데이트합니다. 이렇게 보강된 CSV는 `app.py`의 `import-pokemon` 명령에서 사용되며, 데이터베이스 가져오기 과정에서 PokeAPI에서 포켓몬 설명을 추가로 가져옵니다.
-
-### 2. 프론트엔드 (React)
-
-*   **메인 애플리케이션 (`frontend/src/App.js`):** 애플리케이션 구조, 라우팅 (`react-router-dom`), 전역 상태 관리(인증, 필터, 보기 모드, 포켓몬 파티)를 담당하는 루트 React 컴포넌트입니다. 백엔드에서 데이터를 가져오고 다양한 컴포넌트를 렌더링합니다.
-*   **API 상호작용 (`frontend/src/api.js`):** 모든 프론트엔드-백엔드 통신을 위해 `/api`를 기본 URL로 하는 Axios 인스턴스를 구성합니다.
-*   **인증 컴포넌트 (`frontend/src/auth/`):** `Login.js`, `Register.js`, `AuthContext.js` (인증 상태 관리), `AdminRoute.js` (관리자 경로 보호)를 포함합니다.
-*   **핵심 컴포넌트 (`frontend/src/components/`):**
-    *   `Filters.js`: 다양한 속성으로 포켓몬을 필터링하는 UI를 제공합니다.
-    *   `Results.js`: 포켓몬 데이터를 표시하고, 페이지네이션을 처리하며, '좋아요' 상태를 보여줍니다.
-    *   `Party.js`: 사용자의 임시 포켓몬 파티를 관리합니다.
-    *   `PokemonDetail.js`: 단일 포켓몬에 대한 상세 정보를 표시합니다.
-*   **사용자 프로필 (`frontend/src/profile/ProfilePage.js`):** 사용자의 현재 포켓몬 파티와 '좋아요'한 포켓몬을 표시합니다.
-*   **관리자 컴포넌트 (`frontend/src/admin/`):** `AdminPage.js`, `UserListPage.js`, `UserDetailPage.js`, `PokemonListPage.js`를 포함한 관리자 패널 UI를 제공합니다.
-
-## 구성 요소 간 상호작용
-
-*   **프론트엔드 (React)**는 Axios를 사용하여 RESTful API 호출을 통해 **백엔드 (Flask)**와 통신합니다.
-*   Flask 백엔드는 정적 React 빌드 파일을 제공합니다.
-*   사용자 인증은 JWT를 통해 처리됩니다. 백엔드는 로그인 시 토큰을 발급하고, 프론트엔드는 보호된 요청과 함께 토큰을 저장하고 전송합니다.
-*   백엔드는 SQLAlchemy를 사용하여 SQLite 데이터베이스와 상호작용합니다.
-*   `enrich_data.py` 스크립트는 초기 포켓몬 데이터에 대한 사전 처리 단계 역할을 하며, 이는 Flask 애플리케이션에 의해 데이터베이스로 가져와집니다.
-*   Flask 애플리케이션은 가져오기 과정에서 PokeAPI에서 설명을 가져와 포켓몬 데이터를 추가로 보강합니다.
-
-## 사용된 기술
+## 기술 스택
 
 ### 백엔드
-*   Python
-*   Flask (웹 프레임워크)
-*   Flask-SQLAlchemy (데이터베이스 상호작용을 위한 ORM)
-*   SQLite (데이터베이스)
-*   Flask-Bcrypt (비밀번호 해싱)
-*   Flask-JWT-Extended (JWT 인증)
-*   Pandas (데이터 조작)
-*   Requests (외부 API를 위한 HTTP 클라이언트)
-*   PokeAPI (외부 데이터 소스)
+- Python 3.x
+- Flask (웹 프레임워크)
+- SQLAlchemy (ORM)
+- SQLite (데이터베이스)
+- Flask-JWT-Extended (인증)
+- Flask-Bcrypt (비밀번호 해싱)
+- PokeAPI (외부 데이터 소스)
 
 ### 프론트엔드
-*   JavaScript
-*   React (UI 라이브러리)
-*   React Router DOM (라우팅)
-*   Axios (HTTP 클라이언트)
-*   Bootstrap (CSS 프레임워크)
-*   `jwt-decode` (클라이언트 측 JWT 디코딩)
+- React 19
+- React Router DOM (라우팅)
+- Axios (HTTP 클라이언트)
+- Bootstrap 5 (UI 프레임워크)
+- jwt-decode (토큰 디코딩)
 
-### 개발/빌드 도구
-*   `react-scripts` (React 프로젝트 관리)
-*   `tqdm` (데이터 보강 스크립트의 진행률 표시줄)
+## 설치 및 실행
+
+### 사전 요구사항
+- Python 3.8 이상
+- Node.js 14 이상
+- npm 또는 yarn
+
+### 백엔드 설정
+
+1. 가상환경 생성 및 활성화
+```bash
+python -m venv venv
+# Windows
+venv\Scripts\activate
+# macOS/Linux
+source venv/bin/activate
+```
+
+2. 필요한 패키지 설치
+```bash
+pip install flask flask-sqlalchemy flask-bcrypt flask-jwt-extended pandas requests tqdm
+```
+
+3. 데이터베이스 초기화
+```bash
+flask create-db
+flask create-admin
+```
+
+4. 포켓몬 데이터 가져오기 (선택사항)
+```bash
+# evolution_chain_id 데이터 보강 (최초 1회)
+python enrich_data.py
+
+# 데이터베이스에 포켓몬 데이터 임포트
+flask import-pokemon
+```
+
+5. 백엔드 서버 실행
+```bash
+python app.py
+```
+서버는 `http://127.0.0.1:5000`에서 실행됩니다.
+
+### 프론트엔드 설정
+
+1. 프론트엔드 디렉토리로 이동
+```bash
+cd frontend
+```
+
+2. 의존성 설치
+```bash
+npm install
+```
+
+3. 개발 서버 실행
+```bash
+npm start
+```
+개발 서버는 `http://localhost:3000`에서 실행됩니다.
+
+4. 프로덕션 빌드 (선택사항)
+```bash
+npm run build
+```
+빌드된 파일은 `frontend/build` 디렉토리에 생성되며, Flask 서버가 자동으로 제공합니다.
+
+## 프로젝트 구조
+
+```
+.
+├── app.py                      # Flask 메인 애플리케이션
+├── auth.py                     # 인증 관련 라우트
+├── admin.py                    # 관리자 기능 라우트
+├── models.py                   # 데이터베이스 모델
+├── enrich_data.py              # 포켓몬 데이터 보강 스크립트
+├── pokemon_completed.csv       # 포켓몬 원본 데이터
+├── instance/
+│   └── pokemon_app.db          # SQLite 데이터베이스
+└── frontend/
+    ├── public/                 # 정적 파일
+    ├── src/
+    │   ├── App.js              # React 메인 컴포넌트
+    │   ├── api.js              # Axios 설정
+    │   ├── auth/               # 인증 관련 컴포넌트
+    │   ├── admin/              # 관리자 페이지 컴포넌트
+    │   ├── components/         # 공통 컴포넌트
+    │   └── profile/            # 프로필 페이지
+    └── package.json
+```
+
+## API 엔드포인트
+
+### 인증
+- `POST /api/auth/register` - 회원가입
+- `POST /api/auth/login` - 로그인
+- `GET /api/auth/me` - 현재 사용자 정보
+
+### 포켓몬
+- `GET /api/filters` - 필터 옵션 조회
+- `POST /api/recommend` - 필터 기반 포켓몬 추천
+- `POST /api/recommend/personalized` - 개인화 추천
+- `GET /api/pokemon/<id>` - 포켓몬 상세 정보
+
+### 좋아요
+- `GET /api/likes` - 좋아요 목록 조회
+- `POST /api/pokemon/<id>/like` - 좋아요 토글
+- `GET /api/likes/details` - 좋아요한 포켓몬 상세 정보
+
+### 관리자 (인증 필요)
+- `GET /api/admin/users` - 사용자 목록
+- `GET /api/admin/users/<id>` - 사용자 상세 정보
+- `GET /api/admin/pokemon` - 포켓몬 목록
+- `PUT /api/admin/pokemon/<id>` - 포켓몬 정보 수정
+- `DELETE /api/admin/pokemon/<id>` - 포켓몬 삭제
+
+## 기본 계정
+
+관리자 계정:
+- 아이디: `admin`
+- 비밀번호: `admin`
+
+> ⚠️ 프로덕션 환경에서는 반드시 비밀번호를 변경하세요.
+
+## 데이터베이스 모델
+
+### User
+- 사용자 계정 정보
+- 비밀번호 해싱 (bcrypt)
+- 관리자 권한 플래그
+
+### Pokemon
+- 포켓몬 기본 정보 (이름, 타입, 세대 등)
+- 진화 체인 ID
+- 이미지 URL 및 설명
+- 태그 기반 분류 (역할, 특징, 외형)
+
+### UserLike
+- 사용자-포켓몬 좋아요 관계
+- 개인화 추천 알고리즘의 기반
+
+## 개발 가이드
+
+### 새로운 필터 추가
+1. `pokemon_completed.csv`에 새 컬럼 추가
+2. `models.py`의 `Pokemon` 모델에 필드 추가
+3. `app.py`의 `/api/filters` 엔드포인트에 컬럼 추가
+4. 프론트엔드 `Filters.js` 컴포넌트 업데이트
+
+### 추천 알고리즘 수정
+`app.py`의 `recommend_personalized()` 함수에서 유사도 계산 로직을 수정할 수 있습니다.
+
+## 문제 해결
+
+### 데이터베이스 초기화 오류
+```bash
+flask create-db
+```
+명령어로 데이터베이스를 재생성하세요.
+
+### CORS 오류
+프론트엔드 개발 서버 사용 시 `frontend/package.json`의 `proxy` 설정을 확인하세요.
+
+### 포켓몬 이미지가 표시되지 않음
+PokeAPI의 이미지 URL이 변경되었을 수 있습니다. `app.py`의 `import_pokemon_data()` 함수에서 이미지 URL 형식을 확인하세요.
+
+## 라이선스
+
+이 프로젝트는 교육 목적으로 제작되었습니다.
+
+## 기여
+
+버그 리포트나 기능 제안은 이슈로 등록해주세요.
