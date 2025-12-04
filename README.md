@@ -1,6 +1,7 @@
 # 포켓몬 추천 시스템 - Legends ZA
 
 포켓몬을 탐색하고, 개인화된 추천을 받으며, 나만의 파티를 구성할 수 있는 풀스택 웹 애플리케이션입니다.
+
 <img width="1309" height="1007" alt="image" src="https://github.com/user-attachments/assets/bf9e8b11-e909-40b7-a871-14e21d169c10" />
 
 
